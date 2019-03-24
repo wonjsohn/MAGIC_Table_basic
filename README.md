@@ -13,6 +13,21 @@ Application:
 * Object tracking with color and shapes. 
 * Multiple objects tracking in real time (not included here)
 ```
+
+
+
+ This program provides:
+ ------------
+* Markerless, color-, shape-based object tracking with a single USB Webcam at a rate up to 150 Hz.
+* Produces video file and data spreadsheet in csv format.
+* Timetagged files 
+* Snapshot of the board that remembers the coordinates of the board targets. 
+* Runs in both windows and mac OS.
+* Many more features
+* Update to be followed.
+
+
+
 ![Libraries](resources/fig_magictable_illustration.jpg?raw=true)
 **Figure**. MAGIC Table Design Illustration. A) An RGB web camera is mounted on the stand that is fixed above the center fo the board and adjusted to have a full table as its field-of-view.   B) Design of a 3D printed cup as a controller / object to track.  
 
