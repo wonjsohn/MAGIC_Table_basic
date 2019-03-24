@@ -13,6 +13,8 @@ Application:
 * Object tracking with color and shapes. 
 * Multiple objects tracking in real time (not included here)
 ```
+![Libraries](resources/fig_magictable_illustration.jpg?raw=true)
+**Figure**. MAGIC Table Design Illustration. A) An RGB web camera is mounted on the stand that is fixed above the center fo the board and adjusted to have a full table as its field-of-view.   B) Design of a 3D printed cup as a controller / object to track.  
 
 Requirements
 ------------
@@ -47,6 +49,11 @@ BoardTask   e.g. > main.py -mod "play" -tt "p2p" -sid 'subjectID' -t 30
 8.  Press 'D' or 'd' to delete the current trial. It will break out of the trial and not save. 
 9.  Press 'C' or 'c' to when the goal is reached in the fig8 task.
  
+ 
+ Snapshot of PyCharm Project run/debug configuration (as of 2018.11)
+![Libraries](resources/PyCharm_runconfig.png?raw=true)
+
+
 ### Q. How to associate snapshot files with the subsequenct files? 
 * New pickle dump files are generated without retaking snapshots. 
 * TODO: snapshot files are not required to run any post processing. 
