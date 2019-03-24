@@ -1,0 +1,16 @@
+# igmore output directory
+Output/
+
+# ignore virtual env lib
+venv/
+
+.idea/
+__pycache__/
+
+# ignore list time stamp dump
+lastTimeTag.dump
+
+#ignore any log
+*.log
+
+
