@@ -23,6 +23,7 @@ Application:
 * Timetagged files 
 * Snapshot of the board that remembers the coordinates of the board targets. 
 * Runs in both windows and mac OS.
+* Graphcial User Interface (GUI)
 * Many more features
 * Update to be followed.
 
@@ -33,19 +34,21 @@ Application:
 
 Requirements
 ------------
-Build in python3.6 (other versions works well but the last build was with 3.6)
+Build in python3.6 (other versions works well but the last mmmmmm build was with 3.6)
 ```bash
 pip install pygame numpy ... (many more)
 ```
+* For windows system, download the python 3.6 installer (web-based, or any other) and add python36 to PATH.  
+
 *Tip*: use Python Editor like PyCharm to easily build the environment.
 An example environment for current system (as of 2018.12.15 by Won Joon):
 Note that not all packages displayed here may be necessary to run the magic table.
 
 Snapshot of PyCharm Project setting.
-![Libraries](resources/python_libraries.png?raw=true)
+![Libraries](resources/python_libraries_2019.4.png?raw=true)
 
 
-How to play
+How to play (in command line)
 -------
 1. Open the MagicTable src folder.
 2. `python main.py` + options.
@@ -64,10 +67,16 @@ BoardTask   e.g. > main.py -mod "play" -tt "p2p" -sid 'subjectID' -t 30
 8.  Press 'D' or 'd' to delete the current trial. It will break out of the trial and not save. 
 9.  Press 'C' or 'c' to when the goal is reached in the fig8 task.
  
- 
  Snapshot of PyCharm Project run/debug configuration (as of 2018.11)
 ![Libraries](resources/PyCharm_runconfig.png?raw=true)
 
+
+How to play in GUI : a preferred way
+-------
+![Libraries](resources/GUI_play.png?raw=true)
+1. In ../graphcial_panel/ sub-directory, run MAGIcTableGUI_Runner.py.  For windows, this can be done by clicking the batch file OneClick_MAGIC_TABLE.bat in the same directory.
+2. GUI window with argument options will be presented. Click "Run" button after selecting options. Instructions will pop-up in the camera-alignment and snapshot stage.        
+3. Selected options are automatically saved even if the current GUI window is closed.  
 
 ### Q. How to associate snapshot files with the subsequenct files? 
 * New pickle dump files are generated without retaking snapshots. 
@@ -82,10 +91,11 @@ BoardTask   e.g. > main.py -mod "play" -tt "p2p" -sid 'subjectID' -t 30
 * **shape_detection.py**:  detect targets and obstacles when you first register the board.
 * **colorRangeDetector.py**: Used to tune the color filter indices. If the lighting condition changes, it may be necessary to tune the indices.
 * **check_camera_position.py**: the first file to be run (in main.py) to check the camera position.
+* **graphical_panel/MAGIcTableGUI_Runner.py**:  starts the GUI. One Click Batch file runs this file.  
+* **graphical_panel/OneClick_MAGIC_TABLE.bat**: (Windows-only for batch file) One click activation of GUI.   
 
 
-
-## Magic talble file structure
+## Magic table file structure
 
 MAGIC_TABLE_Root
 
@@ -105,18 +115,14 @@ MAGIC_TABLE_Root
 MAGIC_TABLE_Root
 
     |_ Output: (time, x, y, xb, yb) 
-        |__dataframeOutput
-        |__vidoeOutput
-
+       |_videoOutput
+       |_snapshots
+       |_pickles
+       |_dataframeOutput
 
 General output filename convention: [timestamp_mode_subjectID_success.csv]
 e.g. 20180910_134223_NT0_success.csv
 
-
-## More options
-
-* Display Go! with a start sound.
-* Display digital clock with precision in ns. 
 
 ## Additional files
 
@@ -128,12 +134,14 @@ e.g. 20180910_134223_NT0_success.csv
 
 
 
+## Output folders 
+
+* **videoOutput**: recorded video from the camera during trials. Filename: [timestamp_mode_timeDuration_fps.mp4]
+* **snapshots**: snapshots taken. Filename: [timestamp.jpg]
+* **pickles**: timestamp_circles.dump (centers for two circles) / timestamp_rectangles.dump (if any rec is drawn) 
 
 
-
-
-
-Output video format
+Output video format (codec options)
 ---------------------
 ```
 # -*- coding: utf-8 -*-
@@ -148,8 +156,9 @@ XVID / mp4 / 587 kB / 20 / WMP, VLC, Films&TV, MovieMaker
 PIM1 / mp4 / similar to XVID /     MPEG-1 Codec
 ```
 
+** There could be "OpenCV FFMPEG" related warning message with a codec 'XVID'. This is about codec and extension matching.  This warning can be ignored if you care less about output video file size not being optimally small.   
 
-* Python opencv installation option. (as of Sep. 2017) 
+### * Raspberry Pi 3: Python opencv installation option. (as of Sep. 2017) 
 ```
 # -*- coding: utf-8 -*-
 cmake -D CMAKE_BUILD_TYPE=RELEASE \

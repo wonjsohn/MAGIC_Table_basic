@@ -24,9 +24,9 @@ def get_arguments():
     help="codec of output video")
     ap.add_argument("-c", "--condition",  default ="condition",
     help="condition of trial")
-    ap.add_argument("-ts", "--targetsound", default=1,
+    ap.add_argument("-ts", "--targetsound",  type=int, default=1,
     help="sound on at target")
-    ap.add_argument("-tv", "--targetvisual", default=1,
+    ap.add_argument("-tv", "--targetvisual",  type=int, default=1,
     help="highlight if cursor on the target")
     ap.add_argument("-t", "--timed", type=int,  default=0,
     help="timed loop (s)")
@@ -38,24 +38,32 @@ def get_arguments():
     help="display clock and frame number.")
     ap.add_argument("-sid", "--subject", type=str, default="subj0",
     help="subject ID")
+    ap.add_argument("-nt", "--note", type=int, default="0",
+    help="Leave note if necessary")
+    ap.add_argument("-hn", "--handedness", type=str, default="r",
+    help="Righthander:r, lefthander:l")
+    ap.add_argument("-idx", "--idlevel", type=str, default="ID1",
+    help="Index of Difficulty (ID) 1 to 4.")
+    ap.add_argument("-obs", "--obstacles", type=int, default="0",
+    help="Existence of polygon obstacles")
 
     args = vars(ap.parse_args())
     print(args)
 
     if args["mode"] == "play":  #
-        args["targetsound"] = 1  # sound on at targets
-        args["targetvisual"] = 1
+        # args["targetsound"] = 1  # sound on at targets
+        # args["targetvisual"] = 1
         args["display"] = 1
-        args["snapshot"] = 1
+        # args["snapshot"] = 1
         args["thread"] = 1    # must
-        args["trace"] = 1
+        # args["trace"] = 1
         args["linetrace"] = 1
         args["marker"] = "el_object"
     else:
-        args["display"] = 0  # must
+        args["display"] = 1
         args["thread"] = 1  # must
-        args["trace"] = 0
-        args["linetrace"] = 0
+        args["trace"] = 1
+        args["linetrace"] = 1
         args["marker"] = "el_object"  # option
     return args
 

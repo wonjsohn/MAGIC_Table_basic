@@ -21,7 +21,7 @@ def detectShapesInTable(img_name, centerx, centery, table_halfw, table_halfh ):
         gray = cv2.cvtColor(masked_frame, cv2.COLOR_BGR2GRAY)
         # detect circles in the image
         circles = cv2.HoughCircles(image=gray, method=cv2.HOUGH_GRADIENT, dp=1.6, minDist=100,
-                                   param1=50,param2=70,minRadius=20,maxRadius=70)
+                                   param1=50,param2=70,minRadius=20,maxRadius=100)
 
         # ensure at least some circles were found
         if circles is not None:

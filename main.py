@@ -26,6 +26,12 @@ import os
 import time
 import datetime
 import csv
+
+############### popup GUI ############################
+from PyQt5 import uic
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
 ##########################################################
 
 ####################################################
@@ -91,7 +97,13 @@ def run_main(timeTag):
     ## KEYBOARD command:  esc / "q" key to escape, "d" / "D" key to delete the trial.
     print("KEYBOARD command:  esc / q key to escape, d / D key to delete the trial.")
 
-    global width, height, lens_h, cup_h  
+    """ get screen resolution info"""
+    pygame.init()
+    screen_w = pygame.display.Info().current_w
+    screen_h = pygame.display.Info().current_h
+    pygame.quit() # check if this line needs to be disabled
+
+    global width, height, lens_h, cup_h
     width = 640
     height = 480 #360
     lens_h = 0.8 #Lens vertical height 
@@ -116,11 +128,11 @@ def run_main(timeTag):
 
     ### Check if you need another snapshot during experiment due to disturbed camera or table.
     need_to_take_snapshot= False
-    need_to_take_snapshot= check_camera(args, width, centerx, centery,table_halfw, table_halfh, timeTag, camera_port)
+    need_to_take_snapshot= check_camera(args, width, centerx, centery,table_halfw, table_halfh, timeTag, camera_port, screen_w,screen_h)
 
     ### take a snapshot of the board in png
     if need_to_take_snapshot:  #
-        img_name, circles =take_snapshot(args, width, centerx, centery,table_halfw, table_halfh, timeTag, camera_port)
+        img_name, circles =take_snapshot(args, width, centerx, centery,table_halfw, table_halfh, timeTag, camera_port, screen_w,screen_h)
     else: #if args.get("video", False):  
         print("load snapshot, load pickle data")
 
@@ -208,6 +220,12 @@ def run_main(timeTag):
 #########################################################
     if args["mode"] =="pygame":
         pygame.mixer.music.play(-1)
+
+
+    cv2.namedWindow('main') # main window name
+    """ Window positioning """
+    cv2.moveWindow("main", 515, 0)  # Move it to (x, y)
+
 
 ################################################
 ############### main loop  #####################
@@ -369,7 +387,7 @@ def run_main(timeTag):
 
         """ display"""
         if args["display"] > 0:
-            cv2.imshow("Frame", frame)  # expensive
+            cv2.imshow("main", frame)  # expensive
 
         ###########  KEYBOARD INPUTS (typical) ##############
 	# if the 'q' key is pressed, stop the loop
@@ -406,12 +424,65 @@ def run_main(timeTag):
              'startCue': start_cueList
              })
 
-        sharedFileName = save_dataframe_os(data, args, timeTag, startTimeFormatted)  # write dataframe to file
+
+        """ GUI popup to ask if the trial was a success"""
+        # x = int(input("Was this trial a success?  Y(1) or N(0) "))
+        # replace with GUI to ask if this was a successful trial.
+        import graphical_panel.popup_window as POPUP
+        app = QtWidgets.QApplication(sys.argv)
+        w = POPUP.Window()
+        # w.setWindowTitle('User Input')
+        # w.show()
+        retval = [None] * 3
+        i = 0
+        for ch in w.get_data():
+            retval[i] = ch
+            i = i + 1
+        isSuccess = retval[0]
+        print('what does it say: ', isSuccess)
+        note = retval[2]
+
+        """ handedness considerations. """
+        if args['tasktype'] =='p2p':
+            if start_x <= centerx:
+                if args['handedness']=="r": # right hander
+                    dir_of_move = 'ow'
+                else:
+                    dir_of_move = 'iw'
+            else:
+                if args['handedness'] == "r":  # right hander
+                    dir_of_move = 'iw'
+                else:
+                    dir_of_move = 'ow'
+
+        else:
+            dir_of_move = 'any'
+
+        sharedFileName = save_dataframe_os(data, args, timeTag, isSuccess, note, dir_of_move)  # write dataframe to file
     writer.release()
 
     if not args['thread'] >0:
         cap.release()
     cv2.destroyAllWindows()
+
+
+def drawClock(frame, num_frames, elapsedTime, timeTag, virtual):
+    ####################################################
+    ### display date/fm on screen (run when recording)##
+    ####################################################
+    import datetime
+    # draw the text and timestamp on the frame
+    cv2.putText(frame, "frames: "+str(num_frames), (30, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (224, 255, 255), 1) # color black
+    cv2.putText(frame, "Stopwatch: "+str('%0.3f' %(elapsedTime/1000))+"s", (150, 30),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (224, 255, 255), 1) # color black
+    if virtual:
+        cv2.putText(frame, "frames: " + str(num_frames), (30, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)  # color black
+        cv2.putText(frame, "Stopwatch: " + str('%0.3f' % (elapsedTime / 1000)) + "s", (150, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)  # color black
+    #cv2.putText(frame, datetime.datetime.now().strftime("%A %d %B %Y %I:%M:%S.%f%p")[:-5],
+#                (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 153), 1) # color black
 
 def sound_effects():
     #######################################################

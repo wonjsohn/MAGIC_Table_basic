@@ -31,10 +31,30 @@ def save_video_os(args, timeTag):
 ####################################################
 ### save using panda dataframe  (slower)        ####
 ####################################################
-def save_dataframe_os(dataframe, args, timeTag, startTimeFormatted):
+def save_dataframe_os(dataframe, args, timeTag, isSuccess, note, dir_of_move):
+
+    # note can be stored if you wish here.
 
     dataOutput_path = save_output_at("dataframeOutput")
     # save as csv
-    fullfilename = os.path.join(dataOutput_path, timeTag+"_"  +  args["subject"]  +  "_success"+".csv")
+    fullfilename = os.path.join(dataOutput_path, timeTag+"_" +dir_of_move+"_"+ args['idlevel'] + "_" +  args["subject"]  +  "_success"+str(isSuccess)+ ".csv")
     dataframe.to_csv(fullfilename, sep=',', encoding='utf-8')
+
+    # write meta-data on top of the files. (hard attempt)
+    with open(fullfilename, "w") as f:
+        f.write('meta-data-length:' + str(12) + '\n')  # update as you add more meta-data.
+        f.write('subjectID:' + args["subject"] + '\n')
+        f.write('timeTag:' + timeTag + '\n')
+        f.write('mode:' + args["mode"] + '\n')
+        f.write('tasktype:' + args["tasktype"] + '\n')
+        f.write('Direction:' + dir_of_move + '\n')
+        f.write('marker:' + args["marker"] + '\n')
+        f.write('thread:' + str(args["thread"]) + '\n')
+        f.write('display:' + str(args["display"]) + '\n')
+        f.write('ID:' + args['idlevel'] + '\n')
+        f.write('handedness:' + args['handedness'] + '\n')
+        f.write('Note:' + note + '\n')
+        dataframe.to_csv(f, mode='a')
+
+
     return fullfilename
