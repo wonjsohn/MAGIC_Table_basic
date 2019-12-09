@@ -107,6 +107,17 @@ class MAGIcTableGUI_Runner(QDialog):
             target_sound_checkbox = self.settings.value("target_sound_checkbox_ln")
             target_visual_checbox = self.settings.value("target_visual_checbox_ln")
 
+            if display_checkbox is None:
+                display_checkbox = False
+            if display_trace_checkbox is None:
+                display_trace_checkbox = False
+            if display_clock_checkbox is None:
+                display_clock_checkbox = False
+            if target_sound_checkbox is None:
+                target_sound_checkbox = False
+            if target_visual_checbox is None:
+                target_visual_checbox = False
+
             ## temp fix (4/2/19)
             if p2p_radioButton == 'true':
                 p2p_bool = True
