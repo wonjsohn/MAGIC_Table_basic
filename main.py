@@ -42,6 +42,12 @@ camera_port =0 # Depending on the usb port, it can be 0, 1, 2....
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 
+# green filter is robust.
+#greenLower = (29, 86, 6) #  BGR  GREEN darker
+greenLower = (24, 142, 0) #  BGR  GREEN darker ##temp at night
+#greenUpper = (64, 255, 255) # BGR  GREEN lighter  %
+greenUpper = (120, 255, 255)
+
 orangeLower = (0, 141, 112) # BGR oramnge postit. 
 orangeUpper = (243, 255, 255)  # BGR  orange postit
 
@@ -90,6 +96,101 @@ def ellipse_tracking(hsvmask):
     return (xObject, yObject,  MA, ma, angle,  len(cnts))
 
 
+def ellipse_dual_tracking(hsvmask):
+    #########################################################
+    ##### track minimum enclosing elipse of this mask - two colors #######
+    #########################################################
+    hsv = hsvmask
+    hsvmask_or = cv2.inRange(hsv, orangeLower, orangeUpper)  # cheap
+    hsvmask_gr = cv2.inRange(hsv, greenLower, greenUpper)  # cheap
+    hsvmark = [hsvmask_or, hsvmask_gr]
+    kernel = np.ones((5, 5), np.uint8)
+
+    xObject_list = [0]*2
+    yObject_list = [0]*2
+    MA_list = [0]*2
+    ma_list = [0]*2
+    angle_list = [0]*2
+    len_cnts_list = [0]*2
+    bad_ball = 0
+
+    num_of_color =2 # two colors tracking
+    for i in range(num_of_color):
+        if i==0:
+            hsvmask = hsvmask_or
+        else:
+            hsvmask = hsvmask_gr
+
+        # if i==0: # do not erode the small green ball
+        img_erosion = cv2.erode(hsvmask, kernel, iterations=1)  #
+        # else:
+        #     img_erosion = hsvmask
+        img_dilation = cv2.dilate(img_erosion, kernel, iterations=3)  # erode/dial: 1.3ms
+        # img_dilation3d = cv2.merge([zeros, img_dilation, zeros])
+
+        # find contours in the mask and initialize the current
+        # (x, y) center of the ball
+        cnts = cv2.findContours(img_dilation.copy(), cv2.RETR_EXTERNAL,  # 0.5m.s
+                                cv2.CHAIN_APPROX_SIMPLE)[-2]
+        cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:2]
+
+        center = None
+        # only proceed if at least one contour was found
+        # print "cnts", len(cnts)
+        if len(cnts) > 0:
+            # find the largest contour in the mask, then use
+            # it to compute the minimum enclosing circle and
+            # centroid
+
+            if i==1 or i==2: # use min enclosing circle detection for small ball
+                c = max(cnts, key=cv2.contourArea)
+                ((x, y), radius) = cv2.minEnclosingCircle(c)
+                MA = radius
+                ma = radius
+                angle = 0
+            else:
+                """ellipse fit"""
+                (x, y), (MA, ma), angle = cv2.fitEllipse(cnts[0])
+                """circle fit"""
+                # c = max(cnts, key=cv2.contourArea)
+                # ((x, y), radius) = cv2.minEnclosingCircle(c)
+                # MA = radius
+                # ma = radius
+                # angle = 0
+
+            x_center = width / 2
+            y_center = height / 2
+            ### Projection down to xy plane. Adjustment based on cup height. ######
+            ###  no adjustment for energy margin calc.
+            #x_adjust = ((lens_h - cup_h) / lens_h) * (x - x_center)
+            #y_adjust = ((lens_h - cup_h) / lens_h) * (y - y_center)
+            x_adjust = x - x_center
+            y_adjust = y - y_center
+
+            xObject = x_center + x_adjust
+            yObject = y_center + y_adjust
+
+        else:
+            xObject = -1
+            yObject = -1
+            radius = -1
+            MA = 0
+            ma = 0
+            angle = 0
+            bad_ball = 1
+            # frame_circle = frame.copy()
+
+        # listify
+        xObject_list[i] =xObject
+        yObject_list[i] = yObject
+        MA_list[i] = MA
+        ma_list[i] = ma
+        angle_list[i]=angle
+        len_cnts_list[i] = len(cnts)
+
+    return (xObject_list, yObject_list, MA_list, ma_list, angle_list, len_cnts_list, bad_ball)
+
+
 ####################################################
 ###                    main                     ####
 ####################################################
@@ -130,7 +231,8 @@ def run_main(timeTag):
     need_to_take_snapshot= False
     need_to_take_snapshot= check_camera(args, width, centerx, centery,table_halfw, table_halfh, timeTag, camera_port, screen_w,screen_h)
 
-    ### take a snapshot of the board in png
+
+    """ take a snapshot of the board in png"""
     if need_to_take_snapshot:  #
         img_name, circles =take_snapshot(args, width, centerx, centery,table_halfw, table_halfh, timeTag, camera_port, screen_w,screen_h)
     else: #if args.get("video", False):  
@@ -187,10 +289,12 @@ def run_main(timeTag):
 
     # Cup data to write to file
     dataOut = []
-    elapsedTimeList = []
-    xObjectList = []
-    yObjectList = []
-    start_cueList = []
+    elapsedTimeList= []
+    xObjectList=[]
+    yObjectList=[]
+    xObjectList_ball=[]
+    yObjectList_ball=[]
+    start_cueList= []
     startTimeList = []
     reachTimeList = []
     goalReachedList = []
@@ -257,6 +361,11 @@ def run_main(timeTag):
                 GoSound.play(0)
                 start_cue = 1
 
+            ### Go! Text displayed
+            if start_cue == 1 and time.time()*1000.0 - startTime < 2.5*1000.0:
+                cv2.putText(frame, "Go! ", (400, 40),
+                            cv2.FONT_HERSHEY_TRIPLEX, 2.0, (224, 255, 255), 13) #
+
             if  time.time()*1000.0 - startTime > args.get("timed", False) * 1000.0:  # in seconds (termination time)                           
                 seconds = (time.time()*1000.0 - startTime)/1000.0
                 #if args['tasktype'] == "fig8":
@@ -306,6 +415,49 @@ def run_main(timeTag):
             cupx = xObject
             cupy = yObject
 
+        elif args["marker"] == "el_object_dual":  # track ellipse cup + ball
+            # WJS note: Kalman filter noise parameter may be tuned.
+            # Delayed added by the Kalman filter need to be checked.
+            # Kalman filter doesn't fix the jumping problem when there are two objects with a same color.
+            # Need further process to precent jumping.
+
+            # (xObject, yObject, MA, ma, angle, len_cnts) = ellipse_tracking(hsv)
+            (xObject_list, yObject_list, MA_list, ma_list, angle_list, len_cnts_list, bad_ball) = ellipse_dual_tracking(
+                hsv)
+            if not args["idlevel"] == "ID1":
+                if bad_ball:  # if the ball detection is false, skip this frame. (test this method)
+                    print("ball detection failed for this frame.")
+                    xObject_list[1] = 999  # ball
+                    yObject_list[1] = 999  # ball
+                    # if args["tasktype"]=="p2p":  # if p2p, skip this rare frame. if fig 8
+                    #     continue
+            num_of_colors = 2
+            for i in range(num_of_colors):
+                xObject = xObject_list[i]
+                yObject = yObject_list[i]
+                MA = MA_list[i]
+                ma = ma_list[i]
+                angle = angle_list[i]
+                len_cnts = len_cnts_list[i]
+
+                if len_cnts > 0:
+                    # only proceed if the radius meets a minimum size
+                    if args["trace"] > 0:
+                        if int(MA / 2 + ma / 2) > 10 & int(MA / 2 + ma / 2) < 100:
+                            # draw the circle and centroid on the frame,
+                            # then update the list of tracked points
+                            if i == 0:  # orange cup
+                                cv2.ellipse(frame, (int(xObject), int(yObject)),
+                                            (int(MA / 2), int(ma / 2)), int(angle), 0, 360, (0, 255, 0), 2)
+                            # else:  # green ball
+                            #     cv2.ellipse(frame, (int(xObject), int(yObject)),
+                            #                 (int(MA / 2), int(ma / 2)), int(angle), 0, 360, (0, 255, 255), 2)
+
+                            cv2.circle(frame, (int(xObject), int(yObject)), 5, (0, 255, 255), -1)
+
+            cupx = xObject_list[0]
+            cupy = yObject_list[0]
+
         """ P2P: Determine the starting and ending target based on initial coordinate"""
         if args["tasktype"] == "p2p":
             if num_frames == 0: # run only in the first frame, causes no delay.
@@ -334,8 +486,18 @@ def run_main(timeTag):
         start_cueList.append(start_cue)
         startTimeList.append(startTimeRaw)
         reachTimeList.append(reach_time)
-        xObjectList.append(xObject)
-        yObjectList.append(yObject)
+
+        #if not args["marker"]=="cup":
+        if args["marker"] == "el_object_dual":
+            xObjectList.append(xObject_list[0])
+            yObjectList.append(yObject_list[0])
+            xObjectList_ball.append(xObject_list[1])
+            yObjectList_ball.append(yObject_list[1])
+        else:
+            xObjectList.append(xObject)
+            yObjectList.append(yObject)
+            xObjectList_ball.append(-1)
+            yObjectList_ball.append(-1)
 
 
         pts.appendleft((int(xObject), int(yObject)))
@@ -418,11 +580,12 @@ def run_main(timeTag):
 
     """ with meta data written on top """
     if not delete_trial:
-        data = pd.DataFrame(
-            {'elapsedTime': elapsedTimeList, 'xObject': xObjectList, 'yObject': yObjectList,
-             'reachTime': reachTimeList,
-             'startCue': start_cueList
-             })
+        if args["marker"] == "el_object" or args["marker"] == "el_object_dual": # track ball
+            """ with meta data written on top """
+            data = pd.DataFrame(
+                {'elapsedTime': elapsedTimeList, 'xObject': xObjectList, 'yObject': yObjectList,
+                 'xObject_ball': xObjectList_ball, 'yObject_ball': yObjectList_ball,
+                 'reachTime': reachTimeList,'startCue': start_cueList})
 
 
         """ GUI popup to ask if the trial was a success"""

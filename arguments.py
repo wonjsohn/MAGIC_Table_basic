@@ -53,18 +53,24 @@ def get_arguments():
     if args["mode"] == "play":  #
         # args["targetsound"] = 1  # sound on at targets
         # args["targetvisual"] = 1
-        args["display"] = 1
+        #args["display"] = 1
         # args["snapshot"] = 1
         args["thread"] = 1    # must
         # args["trace"] = 1
         args["linetrace"] = 1
         args["marker"] = "el_object"
-    else:
-        args["display"] = 1
-        args["thread"] = 1  # must
-        args["trace"] = 1
+    elif args["mode"] == "dual":
+        #args["display"] = 1
+        args["thread"] = 1    # must
+        # args["trace"] = 1
         args["linetrace"] = 1
-        args["marker"] = "el_object"  # option
+        args["marker"] = "el_object_dual"
+    else:
+        #args["display"] = 1
+        args["thread"] = 1  # must
+        #args["trace"] = 1
+        args["linetrace"] = 1
+        args["marker"] = "el_object_dual"  # option
     return args
 
 

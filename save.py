@@ -38,7 +38,7 @@ def save_dataframe_os(dataframe, args, timeTag, isSuccess, note, dir_of_move):
     dataOutput_path = save_output_at("dataframeOutput")
     # save as csv
     fullfilename = os.path.join(dataOutput_path, timeTag+"_" +dir_of_move+"_"+ args['idlevel'] + "_" +  args["subject"]  +  "_success"+str(isSuccess)+ ".csv")
-    dataframe.to_csv(fullfilename, sep=',', encoding='utf-8')
+    dataframe.to_csv(fullfilename, sep=',',  encoding='utf-8')
 
     # write meta-data on top of the files. (hard attempt)
     with open(fullfilename, "w") as f:
@@ -54,7 +54,7 @@ def save_dataframe_os(dataframe, args, timeTag, isSuccess, note, dir_of_move):
         f.write('ID:' + args['idlevel'] + '\n')
         f.write('handedness:' + args['handedness'] + '\n')
         f.write('Note:' + note + '\n')
-        dataframe.to_csv(f, mode='a')
+        dataframe.to_csv(f, mode='a', line_terminator='\n')
 
 
     return fullfilename

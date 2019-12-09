@@ -184,7 +184,9 @@ class MAGIcTableGUI_Runner(QDialog):
         target_sound_checkbox_int = 1 if self.target_sound_checkbox.checkState() > 0 else 0
         target_visual_checbox_int = 1 if self.target_visual_checbox.checkState() > 0 else 0
 
-        cmd = "python main.py -mod play -tt " + self.tt \
+        ## mode options( -mod) :  play (single object tracking ) / dual *dual object tracking)
+        cmd = "python main.py -mod dual"  \
+              + " -tt " + self.tt \
               + " -sid " + self.sid_lineEdit.text()\
               + " -hn " + self.hn\
               + " -t " + str(self.timelimit_spinBox.value()) \

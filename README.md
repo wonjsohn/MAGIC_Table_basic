@@ -11,7 +11,7 @@ Application:
 * Upper limb movement Assessment and/or rehabilitation.  
 * Movement strategies analysis
 * Object tracking with color and shapes. 
-* Multiple objects tracking in real time (not included here)
+* Multiple objects tracking in real time (dual object tracking added (Dec. 2019) 
 ```
 
 
@@ -30,11 +30,13 @@ Application:
 
 
 ![Libraries](resources/fig_magictable_illustration.jpg?raw=true)
+
 **Figure**. MAGIC Table Design Illustration. A) An RGB web camera is mounted on the stand that is fixed above the center fo the board and adjusted to have a full table as its field-of-view.   B) Design of a 3D printed cup as a controller / object to track.  
+* **Contact me if you want to obtain the 3D printing design file (.STL) for the cup.
 
 Requirements
 ------------
-Build in python3.6 (other versions works well but the last mmmmmm build was with 3.6)
+Build in python3.6 (other versions works well but the last build was with 3.6)
 ```bash
 pip install pygame numpy ... (many more)
 ```
@@ -52,10 +54,10 @@ How to play (in command line)
 -------
 1. Open the MagicTable src folder.
 2. `python main.py` + options.
-3. Option are play, pp, pygame in broad category. 
+3. Option are play, dual in broad category. 
 
 ```bash
-BoardTask   e.g. > main.py -mod "play" -tt "p2p" -sid 'subjectID' -t 30
+BoardTask   e.g. > main.py -mod "dual" -tt "p2p" -sid 'subjectID' -t 30
 ```
 4. SubjectID. Mapping of subjects name - ID in encryped file (subject_mapping.enc).
     * computer0 : any testing trials 
@@ -82,6 +84,9 @@ How to play in GUI : a preferred way
 * New pickle dump files are generated without retaking snapshots. 
 * TODO: snapshot files are not required to run any post processing. 
 
+### Q. How to tune color filter? 
+* Current version provides dual tracking.  Default is set as orange and green objects.  
+* Color filter can be further tuned by setting the ranges of color filter. (in the begninning of the main.py). CcolorRangeDetector.py can be used to tune the filter to extract the filter's RGB values.  
 
 ## Important files
 * **arguments.py**: Sepcify input parameters to the main.py program
@@ -93,7 +98,7 @@ How to play in GUI : a preferred way
 * **check_camera_position.py**: the first file to be run (in main.py) to check the camera position.
 * **graphical_panel/MAGIcTableGUI_Runner.py**:  starts the GUI. One Click Batch file runs this file.  
 * **graphical_panel/OneClick_MAGIC_TABLE.bat**: (Windows-only for batch file) One click activation of GUI.   
-
+* **colorRangeDetector.py**: tuning the color filter.
 
 ## Magic table file structure
 
